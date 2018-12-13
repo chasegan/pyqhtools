@@ -14,13 +14,10 @@ in the folder
 git status
 
 
-
-===================
-View changes
-View staged changes
-===================
-git diff
-git diff --cached
+=============
+How to commit
+=============
+git commit -m "Fixed all the bugs"
 
 
 =================
