@@ -37,7 +37,7 @@ class Timeseries:
         answer.interval = self.interval
         return answer
 
-    def str(self):
+    def summary(self):
         print("Source: " + self.source)
         print("Start: " + str(self.start))
         print("End: " + str(self.end))
@@ -51,6 +51,17 @@ class Timeseries:
         for i in range(len(self.data)):
             self.data[i] = self.data[i] * factor
 
+    def lookup_date(self, date):
+        i = int((date - self.start) / self.interval)
+        if (i >= 0 and i < self.count):
+            return self.data[i]
+        return self.MISSING_VALUE
+
+    def lookup(self, year, month, day):
+        date = dt.datetime(year, month, day)
+        return self.lookup_date(date)
+
+    MISSING_VALUE = float("nan")
     count = property(__get_count)
     length = property(__get_count)
     end = property(__get_end)

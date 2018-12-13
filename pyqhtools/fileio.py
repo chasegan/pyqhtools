@@ -24,7 +24,7 @@ def read_csv(filename):
 
 def write_csv(timeseries, filename):
     """
-    Save
+    Save the given timeseries to csv file.
     """
     file = open(filename, "w")
     file.write("Date, Value\n")

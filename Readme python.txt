@@ -31,6 +31,7 @@ from there instead of needing to go and clone it from github, then you can use
 the following command to register, zip, and upload the package to PyPi in one
 step:
   >python setup.py register sdist upload
+**** I HAVE CREATED AN ACCOUNT BUT THIS ISN'T WORKING FOR ME
 
 
 =========================================
