@@ -8,4 +8,6 @@ setup(name='pyqhtools',
       author_email='thecosmologist@gmail.com',
       license='MIT',
       packages=['pyqhtools'],
+      test_suite='nose.collector',
+      tests_require=['nose'],
       zip_safe=False)

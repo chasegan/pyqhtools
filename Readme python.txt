@@ -1,9 +1,11 @@
 
 =================
-Unit testing demo
+Unit testing
 =================
+Do it like this:
+https://python-packaging.readthedocs.io/en/latest/testing.html
+Here is a video if you like that kinda thing:
 https://www.youtube.com/watch?v=qDTg_awHVmw
-
 
 
 ============================
