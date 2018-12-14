@@ -2,7 +2,11 @@
 =================
 Unit testing
 =================
-Do it like this:
+To run the tests it's just a matter of running this from the root of the
+repository:
+  >pip install nose
+  >nosetests
+More details here:
 https://python-packaging.readthedocs.io/en/latest/testing.html
 Here is a video if you like that kinda thing:
 https://www.youtube.com/watch?v=qDTg_awHVmw

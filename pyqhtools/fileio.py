@@ -1,3 +1,4 @@
+from .timeseries import *
 import csv
 import datetime
 
@@ -9,7 +10,7 @@ def read_csv(filename):
     """
     answer = Timeseries()
     answer.source = filename.strip()
-    with open(filename, newline='') as csvfile:
+    with open(filename) as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         missing_value = float('nan')
         for row in csvreader:

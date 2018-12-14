@@ -42,6 +42,9 @@ class Timeseries:
     def __get_missing(self):
         return count_missing(self.data)
 
+    def __get_nonmissing(self):
+        return self.length - self.missing
+
     def clone(self):
         answer = Timeseries()
         answer.source = self.source
@@ -248,3 +251,4 @@ class Timeseries:
     mean = property(__get_mean)
     std = property(__get_std)
     missing = property(__get_missing)
+    nonmissing = property(__get_nonmissing)
