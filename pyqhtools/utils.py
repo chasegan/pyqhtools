@@ -1,4 +1,5 @@
 import math
+import datetime as dt
 
 
 def is_a_digit(char):
@@ -79,4 +80,14 @@ def count_missing(data):
     for d in data:
         if math.isnan(d):
             answer = answer + 1
+    return answer
+
+
+def period_length(start_datetime, end_datetime, interval=dt.timedelta(1)):
+    """
+    Calculates the number of intervals (default interval = 1 day) between
+    two datetimes. The function returns the number of days as a float, which
+    may be non-integer and/or negative.
+    """
+    answer = (end_datetime - start_datetime) / interval
     return answer
