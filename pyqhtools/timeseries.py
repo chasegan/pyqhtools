@@ -33,6 +33,12 @@ class Timeseries:
         else:
             return np.nanmean(self.data)
 
+    def __get_std(self):
+        if (len(self.data) == 0):
+            return self.MISSING_VALUE
+        else:
+            return np.nanstd(self.data)
+
     def __get_missing(self):
         return count_missing(self.data)
 
@@ -53,6 +59,7 @@ class Timeseries:
         print("Min: " + str(self.min))
         print("Max: " + str(self.max))
         print("Mean: " + str(self.mean))
+        print("StdDev: " + str(self.std))
 
     def scale(self, factor):
         for i in range(len(self.data)):
@@ -199,10 +206,10 @@ class Timeseries:
             length_is_same, missing_is_same, nonmissing_is_same]
 
     def infill_scale(self, other, factor=None):
-        if factor == None:
-            factor = self.bias(other)            
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
+        if factor == None:
+            factor = self.bias(other)
         new_start = min(self.start, other.start)
         new_end = max(self.end, other.end)
         self.set_start_end([new_start, new_end])
@@ -239,4 +246,5 @@ class Timeseries:
     min = property(__get_min)
     max = property(__get_max)
     mean = property(__get_mean)
+    std = property(__get_std)
     missing = property(__get_missing)
