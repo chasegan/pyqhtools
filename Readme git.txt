@@ -1,4 +1,15 @@
 
+====================
+Setting Git username
+====================
+git config --global user.name "Mona Lisa"
+
+
+=====================
+Checking Git username
+=====================
+git config --global user.name
+
 
 ==================================
 Adding new files to Git repository
