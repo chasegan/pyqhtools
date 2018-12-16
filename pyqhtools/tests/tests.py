@@ -43,3 +43,32 @@ class TestTimeseries(TestCase):
         self.assertTrue(result.max == 494.0)
         self.assertTrue(abs(result.mean - 5.19659885) < 0.01)
         self.assertTrue(abs(result.std - 16.8) < 0.1)
+
+    def test_loading_data_twice_gives_same_timeseries(self):
+        # Capture result of function
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        comparison_results = ts1.compare(ts2)
+        # Check result
+        self.assertTrue(comparison_results[0] == True)
+        self.assertTrue(ts1.source == ts2.source)
+
+    def test_scaling_dataset_positive(self):
+        # Capture result of function
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts1.scale(10.0)
+        # Check result
+        self.assertTrue(ts1.min == 0.0)
+        self.assertTrue(ts1.max == 4940.0)
+        self.assertTrue(abs(ts1.mean - 51.9659885) < 0.01)
+        self.assertTrue(abs(ts1.std - 168.0) < 1)
+
+    def test_scaling_dataset_negative(self):
+        # Capture result of function
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts1.scale(-0.1)
+        # Check result
+        self.assertTrue(abs(ts1.min - (-49.4)) < 0.01)
+        self.assertTrue(ts1.max == 0.0)
+        self.assertTrue(abs(ts1.mean - (-0.519659885)) < 0.01)
+        self.assertTrue(abs(ts1.std - 1.68) < 0.1)
