@@ -223,10 +223,22 @@ class Timeseries:
                 self.set_value(o * factor, 0, 0, 0, date=d)
         return self
 
-    def infill_scalemonthly(self, other):
+    def infill_scalemonthly(self, other, factors=None):
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
-        raise Exception("Not implemented.");
+        if factors == None:
+            raise Exception("infill_scalemonthly auto factors not implemented.")
+        if len(factors) != 12:
+            raise Exception("There must be 12 monthly factors.")
+        new_start = min(self.start, other.start)
+        new_end = max(self.end, other.end)
+        self.set_start_end([new_start, new_end])
+        for d in other.get_dates():
+            s = self.get_value(0, 0, 0, date=d)
+            if math.isnan(s):
+                o = other.get_value(0, 0, 0, date=d)
+                factor = factors[d.month - 1]
+                self.set_value(o * factor, 0, 0, 0, date=d)
         return self
 
     def infill(self, other, method="MERGE"):

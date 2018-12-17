@@ -227,7 +227,7 @@ class TestTimeseries(TestCase):
         self.assertTrue(ts1.length == ts2.length)
         self.assertTrue(ts2.get_value(1910, 6, 1) == 26.9)
         #Save the result for visual inspection
-        pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\r040134_redated.csv")
+        pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\output\r040134_redated.csv")
 
     def test_bias(self):
         '''
@@ -254,7 +254,7 @@ class TestTimeseries(TestCase):
         mean_before_infilling = gappy_data.mean
         #infilling by infill_scale should preserve the mean
         gappy_data.infill_scale(all_ones)
-        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\r040134_infilled.csv")
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled.csv")
         #Check the results
         mean_after_infilling = gappy_data.mean
         self.assertTrue(abs(mean_before_infilling - mean_after_infilling) < 0.00001)
@@ -269,7 +269,7 @@ class TestTimeseries(TestCase):
         gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
         gappy_data.infill_scale(all_ones, factor = 0.6666)
-        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\r040134_infilled2.csv")
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled2.csv")
         #Check the results
         self.assertTrue(abs(gappy_data.mean - 4.339904801) < 0.00001)
 
@@ -278,7 +278,13 @@ class TestTimeseries(TestCase):
         Code tested:
             Timeseries.infill_scalemonthly(other)
         '''
-        self.assertTrue(False)
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        monthly_factors = [0.7, 0.9, 1.1, 1.3, 1.5, 1.6, 1.4, 1.2, 1.0, 0.8, 0.6, 0.5]
+        gappy_data.infill_scalemonthly(all_ones, factors=monthly_factors)
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled3.csv")
+        #Check the results
+        self.assertTrue(abs(gappy_data.mean - 4.412548722) < 0.0001)
 
 
 
@@ -403,19 +409,19 @@ class TestFileio(TestCase):
             save_csv
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
-        pqh.save_csv(ts1, r".\pyqhtools\tests\test_data\r040134_resaved.csv")
-        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134_resaved.csv")
+        pqh.save_csv(ts1, r".\pyqhtools\tests\test_data\output\r040134_resaved.csv")
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\output\r040134_resaved.csv")
         comparison_results = ts1.compare(ts2)
         self.assertTrue(comparison_results[0] == True)
 
-    def test_load_save_load(self):
+    def test_read_write_read(self):
         '''
         Code tested:
             read_csv
             write_csv
         '''
-        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
-        pqh.save_csv(ts1, r".\pyqhtools\tests\test_data\r040134_resaved.csv")
-        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134_resaved.csv")
+        ts1 = pqh.read_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        pqh.write_csv(ts1, r".\pyqhtools\tests\test_data\output\r040134_resaved.csv")
+        ts2 = pqh.read_csv(r".\pyqhtools\tests\test_data\output\r040134_resaved.csv")
         comparison_results = ts1.compare(ts2)
         self.assertTrue(comparison_results[0] == True)
