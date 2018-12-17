@@ -31,7 +31,11 @@ def write_csv(timeseries, filename):
     file.write("Date, Value\n")
     t = timeseries.start
     for v in timeseries.data:
-        file.write(t.strftime('%Y/%m/%d') + ", " + str(v) + "\n")
+        datestring = t.strftime('%Y-%m-%d')
+        valuestring = ""
+        if not math.isnan(v):
+            valuestring = str(v)
+        file.write(datestring + ", " + valuestring + "\n")
         t = t + timeseries.timestep
     file.close()
 

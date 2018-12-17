@@ -10,17 +10,30 @@ class TestTimeseries(TestCase):
     def test_timeseries_constructor_returns_something(self):
         '''
         Code tested:
-            Timeseries.__init__
+            Timeseries.__init__()
         '''
         result = pqh.Timeseries()
         self.assertTrue(result != None)
 
+    def test_start_end(self):
+        '''
+        Code tested:
+            Timeseries.__get_end()
+            Timeseries.get_start_end()
+            Timeseries.start
+            Timeseries.end
+        '''
+        result = pqh.load_csv(r".\pyqhtools\tests\test_data\r040168.csv")
+        start_end = result.get_start_end()
+        self.assertTrue(start_end[0] == dt.datetime(1892, 11, 1))
+        self.assertTrue(start_end[1] == dt.datetime(1980, 9, 30))
+
     def test_length_with_complete_dataset(self):
         '''
         Code tested:
-            Timeseries.__get_count
-            Timeseries.__get_missing
-            Timeseries.__get_nonmissing
+            Timeseries.__get_count()
+            Timeseries.__get_missing()
+            Timeseries.__get_nonmissing()
             Timeseries.length
             Timeseries.count
             Timeseries.missing
@@ -57,10 +70,10 @@ class TestTimeseries(TestCase):
     def test_min_max_mean_std_with_gappy_dataset(self):
         '''
         Code tested:
-            Timeseries.__get_min
-            Timeseries.__get_max
-            Timeseries.__get_mean
-            Timeseries.__get_std
+            Timeseries.__get_min()
+            Timeseries.__get_max()
+            Timeseries.__get_mean()
+            Timeseries.__get_std()
             Timeseries.min
             Timeseries.max
             Timeseries.mean
@@ -79,14 +92,42 @@ class TestTimeseries(TestCase):
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts3 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040168.csv")
         comparison_results = ts1.compare(ts2)
         self.assertTrue(comparison_results[0] == True)
         self.assertTrue(ts1.source == ts2.source)
+        self.assertTrue(ts1.source != ts3.source)
+
+    def test_clone_gives_same_timeseries(self):
+        '''
+        Code tested:
+            Timeseries.clone()
+        '''
+        original = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        theclone = original.clone()
+        #Clones should look the same
+        comparison_results = original.compare(theclone)
+        self.assertTrue(comparison_results[0] == True)
+        #But should not be the same after I manually edit some data
+        theclone.data[0] = 53.0
+        comparison_results = original.compare(theclone)
+        self.assertTrue(comparison_results[0] == False)
+
+    def test_summary_has_no_errors(self):
+        '''
+        Code tested:
+            Timeseries.summary()
+        '''
+        #emtpy_ts = pqh.Timeseries()
+        #empty_ts.summary()
+        loaded_ts = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        loaded_ts.summary()
+        self.assertTrue(True)
 
     def test_scaling_dataset(self):
         '''
         Code tested:
-            Timeseries.scale
+            Timeseries.scale(value)
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         ts1.scale(10.0) #apply some positive scaling
@@ -99,6 +140,92 @@ class TestTimeseries(TestCase):
         self.assertTrue(ts1.max == 0.0)
         self.assertTrue(abs(ts1.mean - (-0.519659885)) < 0.01)
         self.assertTrue(abs(ts1.std - 1.68) < 0.1)
+
+    def test_get_value(self):
+        '''
+        Code tested:
+            Timeseries.get_value(year, month, day, date=None)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        #Value before ts
+        value = ts1.get_value(1910, 5, 1)
+        self.assertTrue(math.isnan(value))
+        #Value at start of ts
+        value = ts1.get_value(1910, 6, 1)
+        self.assertTrue(value == 26.9)
+        #Value inside ts
+        value = ts1.get_value(1910, 6, 2)
+        self.assertTrue(value == 204.2)
+        #Value inside ts (using datetime)
+        value = ts1.get_value(0, 0, 0, date=pqh.parse_date("02-06-1910"))
+        self.assertTrue(value == 204.2)
+        #Missing value inside ts
+        value = ts1.get_value(2012, 6, 26)
+        self.assertTrue(math.isnan(value))
+        #Value at end of ts
+        value = ts1.get_value(2017, 12, 6)
+        self.assertTrue(value == 36.0)
+        #Value after ts
+        value = ts1.get_value(2017, 12, 7)
+        self.assertTrue(math.isnan(value))
+
+    def test_set_value(self):
+        '''
+        Code tested:
+            Timeseries.set_value(value, year, month, day, date=None)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        #Value at start of ts
+        ts1.set_value(99.9, 1910, 6, 1)
+        self.assertTrue(ts1.get_value(1910, 6, 1) == 99.9)
+        #Value inside ts
+        ts1.set_value(99.9, 1910, 6, 2)
+        self.assertTrue(ts1.get_value(1910, 6, 2) == 99.9)
+        #Value at end of ts
+        ts1.set_value(99.9, 2017, 12, 6)
+        self.assertTrue(ts1.get_value(2017, 12, 6) == 99.9)
+
+    def test_set_value_if_missing(self):
+        '''
+        Code tested:
+            Timeseries.set_value(value, year, month, day, date=None)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        #Value 26.9 is not missing and should not be changed
+        ts1.set_value_if_missing(99.9, 1910, 6, 1)
+        self.assertTrue(ts1.get_value(1910, 6, 1) == 26.9)
+        #Value for 2012, 6, 26 is missing and should be changed
+        ts1.set_value_if_missing(99.9, 2012, 6, 26)
+        self.assertTrue(ts1.get_value(2012, 6, 26) == 99.9)
+
+    def test_get_dates(self):
+        '''
+        Code tested:
+            Timeseries.get_dates()
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        dates = ts1.get_dates()
+        self.assertTrue(len(dates) == 39271)
+        self.assertTrue(dates[0] == pqh.parse_date("01/06/1910"))
+
+    def test_set_start_end(self):
+        '''
+        Code tested:
+            Timeseries.set_start_end(start_and_end)
+        '''
+        #Load some patched-point data
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040134.csv")
+        ts1_start_end = ts1.get_start_end()
+        #Load some raw data and check length is different to above
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        self.assertTrue(ts1.length != ts2.length)
+        self.assertTrue(ts2.get_value(1910, 6, 1) == 26.9)
+        #Extend the dates to be same as above and check lengths are now same
+        ts2.set_start_end(ts1_start_end)
+        self.assertTrue(ts1.length == ts2.length)
+        self.assertTrue(ts2.get_value(1910, 6, 1) == 26.9)
+        #Save the result for visual inspection
+        pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\r040134_redated.csv")
 
 
 class TestUtils(TestCase):

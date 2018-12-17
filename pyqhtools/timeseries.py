@@ -113,8 +113,8 @@ class Timeseries:
         return [self.start, self.end]
 
     def set_start_end(self, start_and_end):
-        set_start(0, 0, 0, start_and_end[0])
-        set_end(0, 0, 0, start_and_end[1])
+        self.set_start(0, 0, 0, start_and_end[0])
+        self.set_end(0, 0, 0, start_and_end[1])
 
     def set_start(self, year, month, day, date=None):
         if (date == None):
