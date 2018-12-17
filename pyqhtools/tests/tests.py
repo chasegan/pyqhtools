@@ -212,6 +212,8 @@ class TestTimeseries(TestCase):
         '''
         Code tested:
             Timeseries.set_start_end(start_and_end)
+            Timeseries.set_start(year, month, day)
+            Timeseries.set_end(year, month, day)
         '''
         #Load some patched-point data
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040134.csv")
@@ -226,6 +228,63 @@ class TestTimeseries(TestCase):
         self.assertTrue(ts2.get_value(1910, 6, 1) == 26.9)
         #Save the result for visual inspection
         pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\r040134_redated.csv")
+
+    def test_bias(self):
+        '''
+        Code tested:
+            Timeseries.bias(other)
+        '''
+        #For cloned data the bias should be 1.0
+        original = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        clone = original.clone()
+        bias = clone.bias(original)
+        self.assertTrue(abs(bias - 1.0) < 0.000000001)
+        #Now scale ts2 up 40% and measure the bias again
+        clone.scale(1.4)
+        bias = clone.bias(original)
+        self.assertTrue(abs(bias - 1.4) < 0.000000001)
+
+    def test_infill_scale_auto_factor(self):
+        '''
+        Code tested:
+            Timeseries.infill_scale(other)
+        '''
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        mean_before_infilling = gappy_data.mean
+        #infilling by infill_scale should preserve the mean
+        gappy_data.infill_scale(all_ones)
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\r040134_infilled.csv")
+        #Check the results
+        mean_after_infilling = gappy_data.mean
+        self.assertTrue(abs(mean_before_infilling - mean_after_infilling) < 0.00001)
+        self.assertTrue(gappy_data.get_value(1910, 6, 1) == 26.9)
+        self.assertTrue(gappy_data.missing == 0)
+
+    def test_infill_scale_force_factor(self):
+        '''
+        Code tested:
+            Timeseries.infill_scale(other, factor=None)
+        '''
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        gappy_data.infill_scale(all_ones, factor = 0.6666)
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\r040134_infilled2.csv")
+        #Check the results
+        self.assertTrue(abs(gappy_data.mean - 4.339904801) < 0.00001)
+
+    def test_infill_scalemonthly(self):
+        '''
+        Code tested:
+            Timeseries.infill_scalemonthly(other)
+        '''
+        self.assertTrue(False)
+
+
+
+
+
+
 
 
 class TestUtils(TestCase):
