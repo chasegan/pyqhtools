@@ -32,7 +32,7 @@ def write_csv(timeseries, filename):
     t = timeseries.start
     for v in timeseries.data:
         file.write(t.strftime('%Y/%m/%d') + ", " + str(v) + "\n")
-        t = t + timeseries.interval
+        t = t + timeseries.timestep
     file.close()
 
 

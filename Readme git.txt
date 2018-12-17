@@ -60,3 +60,9 @@ Suggested Packages:
     language-batch to also run windows batch files. To run something just have
     it open and press "Ctrl + Shift + b".
     -------------------
+
+
+===========
+Atom - tips
+===========
+In the tree view, press "i" to toggle show/hide files included in .gitignore.
