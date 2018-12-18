@@ -206,6 +206,7 @@ class TestTimeseries(TestCase):
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         dates = ts1.get_dates()
         self.assertTrue(len(dates) == 39271)
+        self.assertTrue(len(dates) == len(ts1.data))
         self.assertTrue(dates[0] == pqh.parse_date("01/06/1910"))
 
     def test_set_start_end(self):
@@ -297,7 +298,7 @@ class TestTimeseries(TestCase):
         gappy_data.infill_scalemonthly(all_ones, factors=monthly_factors)
         pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled4.csv")
         #Check the results
-        self.assertTrue(abs(gappy_data.mean - 4.412548722) < 0.0001)
+        self.assertTrue(abs(gappy_data.mean - 4.4031751048) < 0.000001)
 
 
 

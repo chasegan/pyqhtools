@@ -68,6 +68,21 @@ class Timeseries:
         for i in range(len(self.data)):
             self.data[i] = self.data[i] * factor
 
+    def scale_monthly(self, seasonal_factors=None):
+        #Resample 12 factors from the provided seasonal_factors list
+        monthly_factors = []
+        n = len(seasonal_factors)
+        if n==1 or n==2 or n==3 or n==4 or n==6 or n==12:
+            for i in range(12):
+                j = math.ceil(n*(i + 1.0)/12.0) - 1
+                monthly_factors.append(seasonal_factors[j])
+        else:
+            raise Exception("seasonal_factors must have length 1, 2, 3, 4, 6, or 12.")
+        dates = self.get_dates()
+        for i in range(self.length):
+            self.data[i] = self.data[i] * monthly_factors[dates[i].month - 1]
+        return self
+
     def get_value(self, year, month, day, date=None):
         if (date == None):
             date = dt.datetime(year, month, day)
@@ -223,46 +238,14 @@ class Timeseries:
                 self.set_value(o * factor, 0, 0, 0, date=d)
         return self
 
-    def scale_monthly(self, factors):
-        #Resample 12 factors from the provided list
-        twelve_factors = []
-        n = len(factors)
-        if n==1 or n==2 or n==3 or n==4 or n==6 or n==12:
-            for i in range(12):
-                j = math.ceil(n*(i + 1.0)/12.0) - 1
-                twelve_factors.append(factors[j])
-        else:
-            raise Exception("Factors list had a weird number of elements: " + str(n))
-        dates = self.get_dates()
-        for i in range(length):
-            f = twelve_factors[dates[i].month - 1]
-            self.data[i] = self.data[i] * f
-        return self        
-
     def infill_scalemonthly(self, other, factors=None):
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
         if factors == None:
             raise Exception("Infill_scalemonthly auto factors not implemented.")
-        #Resample 12 factors from the provided list
-        twelve_factors = []
-        n = len(factors)
-        if n==1 or n==2 or n==3 or n==4 or n==6 or n==12:
-            for i in range(12):
-                j = math.ceil(n*(i + 1.0)/12.0) - 1
-                twelve_factors.append(factors[j])
-        else:
-            raise Exception("Factors list had a weird number of elements: " + str(n))
-        #Do infilling using the twelve_factors
-        new_start = min(self.start, other.start)
-        new_end = max(self.end, other.end)
-        self.set_start_end([new_start, new_end])
-        for d in other.get_dates():
-            s = self.get_value(0, 0, 0, date=d)
-            if math.isnan(s):
-                o = other.get_value(0, 0, 0, date=d)
-                f = twelve_factors[d.month - 1]
-                self.set_value(o * f, 0, 0, 0, date=d)
+        other_clone = other.clone()
+        other_clone.scale_monthly(factors)
+        self.infill(other_clone)
         return self
 
     def infill(self, other, method="MERGE"):
