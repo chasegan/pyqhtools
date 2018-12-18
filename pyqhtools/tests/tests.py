@@ -286,6 +286,19 @@ class TestTimeseries(TestCase):
         #Check the results
         self.assertTrue(abs(gappy_data.mean - 4.412548722) < 0.0001)
 
+    def test_infill_scalemonthly_4factors(self):
+        '''
+        Code tested:
+            Timeseries.infill_scalemonthly(other)
+        '''
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        monthly_factors = [1.1, 1.2, 0.9, 0.8]
+        gappy_data.infill_scalemonthly(all_ones, factors=monthly_factors)
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled4.csv")
+        #Check the results
+        self.assertTrue(abs(gappy_data.mean - 4.412548722) < 0.0001)
+
 
 
 

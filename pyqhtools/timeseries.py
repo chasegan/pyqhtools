@@ -223,13 +223,37 @@ class Timeseries:
                 self.set_value(o * factor, 0, 0, 0, date=d)
         return self
 
+    def scale_monthly(self, factors):
+        #Resample 12 factors from the provided list
+        twelve_factors = []
+        n = len(factors)
+        if n==1 or n==2 or n==3 or n==4 or n==6 or n==12:
+            for i in range(12):
+                j = math.ceil(n*(i + 1.0)/12.0) - 1
+                twelve_factors.append(factors[j])
+        else:
+            raise Exception("Factors list had a weird number of elements: " + str(n))
+        dates = self.get_dates()
+        for i in range(length):
+            f = twelve_factors[dates[i].month - 1]
+            self.data[i] = self.data[i] * f
+        return self        
+
     def infill_scalemonthly(self, other, factors=None):
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
         if factors == None:
-            raise Exception("infill_scalemonthly auto factors not implemented.")
-        if len(factors) != 12:
-            raise Exception("There must be 12 monthly factors.")
+            raise Exception("Infill_scalemonthly auto factors not implemented.")
+        #Resample 12 factors from the provided list
+        twelve_factors = []
+        n = len(factors)
+        if n==1 or n==2 or n==3 or n==4 or n==6 or n==12:
+            for i in range(12):
+                j = math.ceil(n*(i + 1.0)/12.0) - 1
+                twelve_factors.append(factors[j])
+        else:
+            raise Exception("Factors list had a weird number of elements: " + str(n))
+        #Do infilling using the twelve_factors
         new_start = min(self.start, other.start)
         new_end = max(self.end, other.end)
         self.set_start_end([new_start, new_end])
@@ -237,8 +261,8 @@ class Timeseries:
             s = self.get_value(0, 0, 0, date=d)
             if math.isnan(s):
                 o = other.get_value(0, 0, 0, date=d)
-                factor = factors[d.month - 1]
-                self.set_value(o * factor, 0, 0, 0, date=d)
+                f = twelve_factors[d.month - 1]
+                self.set_value(o * f, 0, 0, 0, date=d)
         return self
 
     def infill(self, other, method="MERGE"):
