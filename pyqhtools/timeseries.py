@@ -223,11 +223,9 @@ class Timeseries:
         return [all_same, start_is_same, end_is_same, timestep_is_same,
             length_is_same, missing_is_same, nonmissing_is_same]
 
-    def infill_scale(self, other, factor=None):
+    def infill_merge(self, other):
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
-        if factor == None:
-            factor = self.bias(other)
         new_start = min(self.start, other.start)
         new_end = max(self.end, other.end)
         self.set_start_end([new_start, new_end])
@@ -235,7 +233,17 @@ class Timeseries:
             s = self.get_value(0, 0, 0, date=d)
             if math.isnan(s):
                 o = other.get_value(0, 0, 0, date=d)
-                self.set_value(o * factor, 0, 0, 0, date=d)
+                self.set_value(o, 0, 0, 0, date=d)
+        return self
+
+    def infill_scale(self, other, factor=None):
+        if (self.timestep != other.timestep):
+            raise Exception("Cannot infill due to differing timesteps.")
+        if factor == None:
+            factor = self.bias(other)
+        other_clone = other.clone()
+        other_clone.scale(factor)
+        self.infill_merge(other_clone)
         return self
 
     def infill_scalemonthly(self, other, factors=None):
@@ -245,13 +253,13 @@ class Timeseries:
             raise Exception("Infill_scalemonthly auto factors not implemented.")
         other_clone = other.clone()
         other_clone.scale_monthly(factors)
-        self.infill(other_clone)
+        self.infill_merge(other_clone)
         return self
 
     def infill(self, other, method="MERGE"):
         method = method.upper()
-        if (method=="DIRECT" or method=="MERGE"):
-            self.infill_scale(other, factor=1.0)
+        if (method=="MERGE" or method=="DIRECT"):
+            self.infill_merge(other)
         elif (method=="SCALE" or method=="FACTOR"):
             self.infill_scale(other)
         elif (method=="SCALE_MONTHLY" or method=="WT93B"):
@@ -259,6 +267,8 @@ class Timeseries:
         else:
             raise Exception("Undefined infilling method: " + str(method))
         return self
+
+
 
 
     MISSING_VALUE = float("nan")
