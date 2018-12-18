@@ -275,6 +275,14 @@ class Timeseries:
             raise Exception("Undefined infilling method: " + str(method))
         return self
 
+    def infill_wt93b(self, others):
+        factors = []
+        for o in others:
+            factors.append(self.get_wt93_factors(o))
+        for i in range(len(others)):
+            self.infill_scalemonthly(others[i], factors=factors[i])
+        return self
+
     def get_wt93_factors(self, other):
         if (self.timestep != other.timestep or self.timestep != dt.timedelta(1)):
             raise Exception("WT93 only supports daily timesteps.")
@@ -285,13 +293,11 @@ class Timeseries:
         o = other.clone().set_start_end([start, end])
         #Calculate totals over corresponding complete months
         d = s.get_dates()
-        s_monthly_totals = [0] * 12
-        o_monthly_totals = [0] * 12
         m = 12
+        s_monthly_totals = [0] * 12; o_monthly_totals = [0] * 12
         s_cum = 0; o_cum = 0
-        for i in range(len(s.data)):
+        for i in range(len(d)):
             if (m != d[i].month):
-                #New month. Clear the previous totals
                 if not math.isnan(s_cum + o_cum):
                     s_monthly_totals[m - 1] += s_cum
                     o_monthly_totals[m - 1] += o_cum

@@ -339,6 +339,19 @@ class TestTimeseries(TestCase):
         #Check the results
         self.assertTrue(abs(gappy_data.mean - 5.21500501) < 0.0001)
 
+    def test_infill_wt93b(self):
+        '''
+        Code tested:
+            Timeseries.infill_wt93b(others)
+        '''
+        r040134 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        r040168 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040168.csv")
+        p040850 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040850.csv")
+        r040134.infill_wt93b([r040168,p040850])
+        pqh.save_csv(r040134, r".\pyqhtools\tests\test_data\output\r040134_r040168_p040850.csv")
+        self.assertTrue(True)
+
+
 
 
 
@@ -482,8 +495,6 @@ class TestUtils(TestCase):
         self.assertTrue(pqh.last_day_in_month(dt.datetime(2018,1,1)) == dt.datetime(2018,1,31))
         self.assertTrue(pqh.last_day_in_month(dt.datetime(2018,1,31)) == dt.datetime(2018,1,31))
         self.assertTrue(pqh.last_day_in_month(dt.datetime(2000,2,29)) == dt.datetime(2000,2,29))
-
-
 
 
 
