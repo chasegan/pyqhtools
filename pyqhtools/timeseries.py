@@ -110,6 +110,10 @@ class Timeseries:
         else:
             raise Exception("Specified date is outside the timeseries range.")
 
+    def get_copy_of_data(self):
+        copy_of_data = self.data.copy()
+        return copy_of_data
+
     def get_dates(self, start=None, end=None, timestep=None):
         if (start == None):
             start = self.start
@@ -130,6 +134,7 @@ class Timeseries:
     def set_start_end(self, start_and_end):
         self.set_start(0, 0, 0, start_and_end[0])
         self.set_end(0, 0, 0, start_and_end[1])
+        return self
 
     def set_start(self, year, month, day, date=None):
         if (date == None):
@@ -138,6 +143,7 @@ class Timeseries:
         append_to_start = max(0, new_length - self.length)
         self.data = [self.MISSING_VALUE] * append_to_start + self.data[:new_length]
         self.start = date
+        return self
 
     def set_end(self, year, month, day, date=None):
         if (date == None):
@@ -145,6 +151,7 @@ class Timeseries:
         new_length = max(0, 1 + int(period_length(self.start, date, self.timestep)))
         append_to_end = max(0, new_length - self.length)
         self.data = self.data[:new_length] + [self.MISSING_VALUE] * append_to_end
+        return self
 
     def bias(self, other, epsilon=0.0):
         """
@@ -250,7 +257,7 @@ class Timeseries:
         if (self.timestep != other.timestep):
             raise Exception("Cannot infill due to differing timesteps.")
         if factors == None:
-            raise Exception("Infill_scalemonthly auto factors not implemented.")
+            factors = self.get_wt93_factors(other)
         other_clone = other.clone()
         other_clone.scale_monthly(factors)
         self.infill_merge(other_clone)
@@ -267,6 +274,49 @@ class Timeseries:
         else:
             raise Exception("Undefined infilling method: " + str(method))
         return self
+
+    def get_wt93_factors(self, other):
+        if (self.timestep != other.timestep or self.timestep != dt.timedelta(1)):
+            raise Exception("WT93 only supports daily timesteps.")
+        #Find the overlapping periods
+        start = dt.datetime(max(self.start.year, other.start.year), 1, 1)
+        end = dt.datetime(min(self.end.year, other.end.year), 12, 31)
+        #Clone self and other and align their periods
+        self_clone = self.clone().set_start_end([start, end])
+        other_clone = other.clone().set_start_end([start, end])
+        #Get the data and date arrays
+        d = self_clone.get_dates()
+        s = self_clone.data
+        o = other_clone.data
+        n = len(o)
+        m = 12
+        s_monthly_totals = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        o_monthly_totals = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        s_temp = 0.0
+        o_temp = 0.0
+        for i in range(n):
+            this_month = d[i].month
+            if (this_month != m):
+                #New month. Clear the previous totals
+                if not math.isnan(s_temp + o_temp):
+                    s_monthly_totals[m - 1] += s_temp
+                    o_monthly_totals[m - 1] += o_temp
+                s_temp = 0.0
+                o_temp = 0.0
+                m = this_month
+            s_temp += s[i]
+            o_temp += o[i]
+        #Clear the final month
+        if not math.isnan(s_temp + o_temp):
+            s_monthly_totals[m - 1] += s_temp
+            o_monthly_totals[m - 1] += o_temp
+        #Calculate factors
+        answer = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        for i in range(12):
+            answer[i] = s_monthly_totals[i] / o_monthly_totals[i]
+        return answer
+
+
 
 
 

@@ -91,3 +91,26 @@ def period_length(start_datetime, end_datetime, interval=dt.timedelta(1)):
     """
     answer = (end_datetime - start_datetime) / interval
     return answer
+
+
+def days_in_month(year, month):
+    """
+    Calculates the number of days in a month. This is a bit hacky but doesn't
+    require any new libraries and it works.
+    """
+    date1 = dt.datetime(year, month, 1)
+    date2 = None
+    if month == 12:
+        date2 = dt.datetime(year + 1, 1, 1)
+    else:
+        date2 = dt.datetime(year, month + 1, 1)
+    answer = (date2 - date1).days
+    return answer
+
+def last_day_in_month(date):
+    """
+    Returns a datetime set to the last day in the month
+    """
+    x = days_in_month(date.year, date.month)
+    answer = dt.datetime(date.year, date.month, x)
+    return answer

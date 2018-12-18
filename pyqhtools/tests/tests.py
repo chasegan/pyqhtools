@@ -245,6 +245,21 @@ class TestTimeseries(TestCase):
         bias = clone.bias(original)
         self.assertTrue(abs(bias - 1.4) < 0.000000001)
 
+    def test_infill_merge(self):
+        '''
+        Code tested:
+            Timeseries.infill_merge(other)
+        '''
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        #infilling by infill_merge
+        gappy_data.infill_merge(all_ones)
+        #Check the results
+        mean_after_infilling = gappy_data.mean
+        self.assertTrue(abs(mean_after_infilling - 4.40295598676) < 0.00001)
+        self.assertTrue(gappy_data.get_value(1910, 6, 1) == 26.9)
+        self.assertTrue(gappy_data.missing == 0)
+
     def test_infill_scale_auto_factor(self):
         '''
         Code tested:
@@ -277,7 +292,7 @@ class TestTimeseries(TestCase):
     def test_infill_scalemonthly(self):
         '''
         Code tested:
-            Timeseries.infill_scalemonthly(other)
+            Timeseries.infill_scalemonthly(other, factors=None)
         '''
         gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
@@ -290,7 +305,7 @@ class TestTimeseries(TestCase):
     def test_infill_scalemonthly_4factors(self):
         '''
         Code tested:
-            Timeseries.infill_scalemonthly(other)
+            Timeseries.infill_scalemonthly(other, factors=None)
         '''
         gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
@@ -300,6 +315,29 @@ class TestTimeseries(TestCase):
         #Check the results
         self.assertTrue(abs(gappy_data.mean - 4.4031751048) < 0.000001)
 
+    def test_infill_scalemonthly_wt93b(self):
+        '''
+        Code tested:
+            Timeseries.infill_scalemonthly(other)
+        '''
+        #This is the WT93b test
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        original_length = gappy_data.length
+        gappy_data.infill_scalemonthly(gappy_data.clone())
+        self.assertTrue(gappy_data.length == original_length)
+
+    def test_infill_scalemonthly_wt93b_2(self):
+        '''
+        Code tested:
+            Timeseries.infill_scalemonthly(other)
+        '''
+        #This is the WT93b test
+        gappy_data = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        all_ones = pqh.load_csv(r".\pyqhtools\tests\test_data\all_ones.csv")
+        gappy_data.infill_scalemonthly(all_ones)
+        pqh.save_csv(gappy_data, r".\pyqhtools\tests\test_data\output\r040134_infilled5_wt93b.csv")
+        #Check the results
+        self.assertTrue(abs(gappy_data.mean - 5.21500501) < 0.0001)
 
 
 
@@ -413,6 +451,42 @@ class TestUtils(TestCase):
         self.assertTrue(pqh.period_length(dt2, dt1) == -2)
         one_hour = dt.timedelta(seconds=3600)
         self.assertTrue(pqh.period_length(dt2, dt1, one_hour) == -2 * 24)
+
+    def test_days_in_month(self):
+        '''
+        Code tested:
+            days_in_month(year, month)
+        '''
+        self.assertTrue(pqh.days_in_month(2018,1) == 31)
+        self.assertTrue(pqh.days_in_month(2018,2) == 28)
+        self.assertTrue(pqh.days_in_month(2018,3) == 31)
+        self.assertTrue(pqh.days_in_month(2018,4) == 30)
+        self.assertTrue(pqh.days_in_month(2018,5) == 31)
+        self.assertTrue(pqh.days_in_month(2018,6) == 30)
+        self.assertTrue(pqh.days_in_month(2018,7) == 31)
+        self.assertTrue(pqh.days_in_month(2018,8) == 31)
+        self.assertTrue(pqh.days_in_month(2018,9) == 30)
+        self.assertTrue(pqh.days_in_month(2018,10) == 31)
+        self.assertTrue(pqh.days_in_month(2018,11) == 30)
+        self.assertTrue(pqh.days_in_month(2018,12) == 31)
+        self.assertTrue(pqh.days_in_month(1900,2) == 28)
+        self.assertTrue(pqh.days_in_month(1996,2) == 29)
+        self.assertTrue(pqh.days_in_month(2000,2) == 29)
+        self.assertTrue(pqh.days_in_month(2004,2) == 29)
+
+    def test_last_day_in_month(self):
+        '''
+        Code tested:
+            last_day_in_month(date)
+        '''
+        self.assertTrue(pqh.last_day_in_month(dt.datetime(2018,1,1)) == dt.datetime(2018,1,31))
+        self.assertTrue(pqh.last_day_in_month(dt.datetime(2018,1,31)) == dt.datetime(2018,1,31))
+        self.assertTrue(pqh.last_day_in_month(dt.datetime(2000,2,29)) == dt.datetime(2000,2,29))
+
+
+
+
+
 
 
 class TestFileio(TestCase):
