@@ -278,40 +278,29 @@ class Timeseries:
     def get_wt93_factors(self, other):
         if (self.timestep != other.timestep or self.timestep != dt.timedelta(1)):
             raise Exception("WT93 only supports daily timesteps.")
-        #Find the overlapping periods
-        start = dt.datetime(max(self.start.year, other.start.year), 1, 1)
-        end = dt.datetime(min(self.end.year, other.end.year), 12, 31)
         #Clone self and other and align their periods
-        self_clone = self.clone().set_start_end([start, end])
-        other_clone = other.clone().set_start_end([start, end])
-        #Get the data and date arrays
-        d = self_clone.get_dates()
-        s = self_clone.data
-        o = other_clone.data
-        n = len(o)
+        start = dt.datetime(max(self.start.year, other.start.year), 1, 1)
+        end = dt.datetime(min(self.end.year, other.end.year) + 1, 1, 1)
+        s = self.clone().set_start_end([start, end])
+        o = other.clone().set_start_end([start, end])
+        #Calculate totals over corresponding complete months
+        d = s.get_dates()
+        s_monthly_totals = [0] * 12
+        o_monthly_totals = [0] * 12
         m = 12
-        s_monthly_totals = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        o_monthly_totals = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        s_temp = 0.0
-        o_temp = 0.0
-        for i in range(n):
-            this_month = d[i].month
-            if (this_month != m):
+        s_cum = 0; o_cum = 0
+        for i in range(len(s.data)):
+            if (m != d[i].month):
                 #New month. Clear the previous totals
-                if not math.isnan(s_temp + o_temp):
-                    s_monthly_totals[m - 1] += s_temp
-                    o_monthly_totals[m - 1] += o_temp
-                s_temp = 0.0
-                o_temp = 0.0
-                m = this_month
-            s_temp += s[i]
-            o_temp += o[i]
-        #Clear the final month
-        if not math.isnan(s_temp + o_temp):
-            s_monthly_totals[m - 1] += s_temp
-            o_monthly_totals[m - 1] += o_temp
+                if not math.isnan(s_cum + o_cum):
+                    s_monthly_totals[m - 1] += s_cum
+                    o_monthly_totals[m - 1] += o_cum
+                s_cum = 0; o_cum = 0
+                m = d[i].month
+            s_cum += s.data[i]
+            o_cum += o.data[i]
         #Calculate factors
-        answer = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        answer = [0] * 12
         for i in range(12):
             answer[i] = s_monthly_totals[i] / o_monthly_totals[i]
         return answer
