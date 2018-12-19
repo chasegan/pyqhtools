@@ -1,5 +1,6 @@
 import math
 import datetime as dt
+import numbers
 
 
 def is_a_digit(char):
@@ -114,4 +115,12 @@ def last_day_in_month(date):
     """
     x = days_in_month(date.year, date.month)
     answer = dt.datetime(date.year, date.month, x)
+    return answer
+
+
+def is_a_number(var):
+    """
+    Tests if a variable is an instance of a numberself (i.e. int, float, etc)
+    """
+    answer = isinstance(var, numbers.Number)
     return answer

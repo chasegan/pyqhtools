@@ -141,6 +141,61 @@ class TestTimeseries(TestCase):
         self.assertTrue(abs(ts1.mean - (-0.519659885)) < 0.01)
         self.assertTrue(abs(ts1.std - 1.68) < 0.1)
 
+    def test_adding_a_value(self):
+        '''
+        Code tested:
+            Timeseries.__add__(value)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = ts1 + 1.1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
+        self.assertTrue(abs(ts2.mean - 6.29659885) < 0.0001)
+        self.assertTrue(ts2.min == 1.1)
+        self.assertTrue(ts2.max == 495.1)
+        self.assertTrue(ts2.length == ts1.length)
+
+    def test_adding_a_value_2(self):
+        '''
+        Code tested:
+            Timeseries.__radd__(value)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = 1.1 + ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
+        self.assertTrue(abs(ts2.mean - 6.29659885) < 0.0001)
+        self.assertTrue(ts2.min == 1.1)
+        self.assertTrue(ts2.max == 495.1)
+        self.assertTrue(ts2.length == ts1.length)
+
+    def test_subtracting_a_value(self):
+        '''
+        Code tested:
+            Timeseries.__add__(value)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = ts1 - 1.1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
+        self.assertTrue(abs(ts2.mean - 4.09659885) < 0.0001)
+        self.assertTrue(ts2.min == -1.1)
+        self.assertTrue(ts2.max == 492.9)
+        self.assertTrue(ts2.length == ts1.length)
+
+    def test_multiplying_a_value(self):
+        '''
+        Code tested:
+            Timeseries.__mul__(value)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = ts1 * 2.0
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
+        self.assertTrue(abs(ts2.mean - 10.3931977) < 0.0001)
+        self.assertTrue(ts2.min == 0)
+        self.assertTrue(ts2.max == 988)
+        self.assertTrue(ts2.length == ts1.length)
+        ts3 = 2.0 * ts1
+        ts3_ts2_are_same = ts2.compare(ts3)[0]
+        self.assertTrue(ts3_ts2_are_same)
+
     def test_get_value(self):
         '''
         Code tested:

@@ -45,6 +45,38 @@ class Timeseries:
     def __get_nonmissing(self):
         return self.length - self.missing
 
+    def __add__(self, other):
+        self_clone = self.clone()
+        self_clone.add(other)
+        return self_clone
+
+    def __radd__(self, other):
+        answer = self.__add__(other)
+        return answer
+
+    def __sub__(self, other):
+        answer = self.__add__(-1 * other)
+        return answer
+
+    def __rsub__(self, other):
+        if not is_a_number(other):
+            raise Exception("Cannot subtract timeseries from non-number.")
+        answer = self.clone()
+        for i in range(answer.length):
+            answer.data[i] = other - self.data[i]
+        return answer
+
+    def __mul__(self, other):
+        if not is_a_number(other):
+            raise Exception("Cannot multiply timeseries by non-number.")
+        self_clone = self.clone()
+        self_clone.scale(other)
+        return self_clone
+
+    def __rmul__(self, other):
+        answer = self.__mul__(other)
+        return answer
+
     def clone(self):
         answer = Timeseries()
         answer.source = self.source
@@ -67,6 +99,21 @@ class Timeseries:
     def scale(self, factor):
         for i in range(len(self.data)):
             self.data[i] = self.data[i] * factor
+        return self
+
+    def add(self, value):
+        if is_a_number(value):
+            for i in range(len(self.data)):
+                self.data[i] = self.data[i] + value
+        elif isinstance(value, timeseries):
+            add_timeseries(value)
+        else:
+            raise Exception("Dont know how to add this object.")
+        return self
+
+    def add_timeseries(self, other):
+        raise Exception("Not implemented.")
+        return self
 
     def scale_monthly(self, seasonal_factors=None):
         #Resample 12 factors from the provided seasonal_factors list
