@@ -107,6 +107,7 @@ def days_in_month(year, month):
     answer = (date2 - date1).days
     return answer
 
+
 def last_day_in_month(date):
     """
     Returns a datetime set to the last day in the month

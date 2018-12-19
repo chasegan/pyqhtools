@@ -230,6 +230,25 @@ class TestTimeseries(TestCase):
         #Save the result for visual inspection
         pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\output\r040134_redated.csv")
 
+    def test_set_start_end2(self):
+        '''
+        Code tested:
+            Timeseries.set_start_end(start_and_end)
+            Timeseries.set_start(year, month, day)
+            Timeseries.set_end(year, month, day)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040134.csv")
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2_start_end = ts2.get_start_end()
+        self.assertTrue(ts1.length != ts2.length)
+        self.assertTrue(ts1.get_value(1910, 6, 1) == 26.9)
+        ts1.set_start_end(ts2_start_end)
+        #Save the result for visual inspection
+        pqh.save_csv(ts1, r".\pyqhtools\tests\test_data\output\r040134_redated2.csv")
+        #Assert expected results
+        self.assertTrue(ts1.length == ts2.length)
+        self.assertTrue(ts1.get_value(1910, 6, 1) == 26.9)
+
     def test_bias(self):
         '''
         Code tested:
@@ -345,14 +364,50 @@ class TestTimeseries(TestCase):
             Timeseries.infill_wt93b(others)
         '''
         r040134 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        #r040168 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040168.csv")
+        p040850 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040850.csv")
+        factors = r040134.get_wt93_factors(p040850)
+        known_answers = [1.0412290338857493,
+            1.0065128956703973,
+            1.0598426339157894,
+            1.0476595992884017,
+            1.0548171248637521,
+            1.0538393731635654,
+            1.0441554098438972,
+            1.0498160869346143,
+            1.0296487322003494,
+            1.0394039501112953,
+            1.0631576523681232,
+            1.0712720135216185]
+        for i in range(12):
+            self.assertTrue(abs(factors[i] - known_answers[i]) < 0.0000001)
+        r040134.infill_wt93b([p040850])
+        pqh.save_csv(r040134, r".\pyqhtools\tests\test_data\output\r040134_p040850.csv")
+        self.assertTrue(r040134.missing == 0)
+
+    def test_infill_wt93b2(self):
+        '''
+        Code tested:
+            Timeseries.infill_wt93b(others)
+        '''
+        r040134 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         r040168 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040168.csv")
         p040850 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040850.csv")
         r040134.infill_wt93b([r040168,p040850])
         pqh.save_csv(r040134, r".\pyqhtools\tests\test_data\output\r040134_r040168_p040850.csv")
-        self.assertTrue(True)
+        self.assertTrue(r040134.missing == 0)
 
-
-
+    def test_infill_wt93b3(self):
+        '''
+        Code tested:
+            Timeseries.infill_wt93b(others)
+        '''
+        r040695 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040695.csv")
+        r040547 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040547.csv")
+        p040264 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040264.csv")
+        r040695.infill_wt93b([r040547,p040264])
+        pqh.save_csv(r040695, r".\pyqhtools\tests\test_data\output\r040695_r040547_p040264.csv")
+        self.assertTrue(abs(r040695.mean - 4.6781753769) < 0.0000001)
 
 
 

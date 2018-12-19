@@ -139,9 +139,11 @@ class Timeseries:
     def set_start(self, year, month, day, date=None):
         if (date == None):
             date = dt.datetime(year, month, day)
-        new_length = max(0, 1 + int(period_length(date, self.end, self.timestep)))
+        start_offset = int(period_length(self.start, date, self.timestep))
+        new_length = max(0, self.length - start_offset)
         append_to_start = max(0, new_length - self.length)
-        self.data = [self.MISSING_VALUE] * append_to_start + self.data[:new_length]
+        trim_from_start = max(0, start_offset)
+        self.data = [self.MISSING_VALUE] * append_to_start + self.data[trim_from_start:]
         self.start = date
         return self
 
@@ -277,8 +279,8 @@ class Timeseries:
 
     def infill_wt93b(self, others):
         factors = []
-        for o in others:
-            factors.append(self.get_wt93_factors(o))
+        for i in range(len(others)):
+            factors.append(self.get_wt93_factors(others[i]))
         for i in range(len(others)):
             self.infill_scalemonthly(others[i], factors=factors[i])
         return self
