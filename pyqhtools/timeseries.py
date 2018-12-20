@@ -51,11 +51,11 @@ class Timeseries:
         return self_clone
 
     def __radd__(self, other):
-        answer = self.__add__(other)
+        answer = self + other
         return answer
 
     def __sub__(self, other):
-        answer = self.__add__(-1 * other)
+        answer = self + -1 * other
         return answer
 
     def __rsub__(self, other):
@@ -66,6 +66,20 @@ class Timeseries:
             answer.data[i] = other - self.data[i]
         return answer
 
+    def __neg__(self):
+        self_clone = self.clone()
+        for i in range(self.length):
+            self_clone.data[i] = -self_clone.data[i]
+        return self_clone
+
+    def __pow__(self, other):
+        if not is_a_number(other):
+            raise Exception("Cannot apply exponent which is a non-number.")
+        self_clone = self.clone()
+        for i in range(self.length):
+            self_clone.data[i] = self_clone.data[i]**other
+        return self_clone
+
     def __mul__(self, other):
         if not is_a_number(other):
             raise Exception("Cannot multiply timeseries by non-number.")
@@ -74,8 +88,11 @@ class Timeseries:
         return self_clone
 
     def __rmul__(self, other):
-        answer = self.__mul__(other)
+        answer = self * other
         return answer
+
+    def __div__(self, other):
+        return self * other**-1
 
     def clone(self):
         answer = Timeseries()

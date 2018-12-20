@@ -157,6 +157,30 @@ class TestTimeseries(TestCase):
         self.assertTrue(ts2.length == ts1.length)
         self.assertTrue(ts2.compare(ts3)[0]) #TS3 and TS2 should be identical
 
+    def test_neg(self):
+        '''
+        Code tested:
+            Timeseries.__neg__()
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = -ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__neg__ should not modify the original timeseries
+        self.assertTrue(abs(ts2.mean + 5.19659885) < 0.000001)
+        self.assertTrue(ts2.min == -494)
+        self.assertTrue(ts2.max == 0.0)
+        self.assertTrue(ts2.length == ts1.length)
+
+    def test_pow_number(self):
+        '''
+        Code tested:
+            Timeseries.__pow__(number)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = ts1**2
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__neg__ should not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 311.5936900771) < 0.000001)
+        self.assertTrue(ts2.length == ts1.length)
+
     def test_add_radd_timeseries(self):
         '''
         Code tested:
