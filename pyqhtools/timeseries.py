@@ -247,6 +247,10 @@ class Timeseries:
         return stot / otot
 
     def nse(self, other):
+        """
+        Nash Sutcliffe Efficiency
+        https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient
+        """
         answer = 1 - ((other - self)**2).mean / ((other - other.mean)**2).mean
         return answer
 
