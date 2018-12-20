@@ -377,6 +377,16 @@ class TestTimeseries(TestCase):
         nse = mod.nse(obs)
         self.assertTrue(abs(nse - 0.725302706062934) < 0.000000001)
 
+    def test_pearsons_r(self):
+        '''
+        Code tested:
+            Timeseries.pearsons_r(other)
+        '''
+        obs = pqh.load_csv(r".\pyqhtools\tests\test_data\416020_100141.CSV")
+        mod = pqh.load_csv(r".\pyqhtools\tests\test_data\416020_rfadj3test_fors.csv")
+        nse = mod.pearsons_r(obs)
+        self.assertTrue(abs(nse - 0.864668449962663) < 0.000000001)
+
     def test_date_of_first_last_data(self):
         '''
         Code tested:

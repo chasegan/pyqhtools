@@ -33,6 +33,9 @@ class Timeseries:
         else:
             return np.nanmean(self.data)
 
+    def __get_sum(self):
+        return np.nansum(self.data)
+
     def __get_std(self):
         if (len(self.data) == 0):
             return self.MISSING_VALUE
@@ -81,10 +84,13 @@ class Timeseries:
         return self_clone
 
     def __mul__(self, other):
-        if not is_a_number(other):
-            raise Exception("Cannot multiply timeseries by non-number.")
         self_clone = self.clone()
-        self_clone.scale(other)
+        if is_a_number(other):
+            self_clone.scale(other)
+        elif isinstance(other, Timeseries):
+            self_clone.mul_timeseries(other)
+        else:
+            raise Exception("Dont know how to multiply this object.")
         return self_clone
 
     def __rmul__(self, other):
@@ -139,6 +145,16 @@ class Timeseries:
         for i in range(self.length):
             o = other.get_value(0, 0, 0, date=all_dates[i])
             self.data[i] += o
+        return self
+
+    def mul_timeseries(self, other):
+        new_start = min(self.start, other.start)
+        new_end = max(self.end, other.end)
+        self.set_start_end([new_start, new_end])
+        all_dates = self.get_dates()
+        for i in range(self.length):
+            o = other.get_value(0, 0, 0, date=all_dates[i])
+            self.data[i] *= o
         return self
 
     def scale_monthly(self, seasonal_factors=None):
@@ -252,6 +268,18 @@ class Timeseries:
         https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient
         """
         answer = 1 - ((other - self)**2).mean / ((other - other.mean)**2).mean
+        return answer
+
+    def pearsons_r(self, other):
+        """
+        Pearson's R correlation coefficient
+        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+        """
+        _self = self + 0 * other #common period
+        _other = other + 0 * self #common period
+        numerator = ((_self - _self.mean) * (_other - _other.mean)).sum
+        denominator = ((_self - _self.mean)**2).sum**0.5 * ((_other - _other.mean)**2).sum**0.5
+        answer = numerator / denominator
         return answer
 
     def compare_start(self, other):
@@ -422,6 +450,7 @@ class Timeseries:
     min = property(__get_min)
     max = property(__get_max)
     mean = property(__get_mean)
+    sum = property(__get_sum)
     std = property(__get_std)
     missing = property(__get_missing)
     nonmissing = property(__get_nonmissing)
