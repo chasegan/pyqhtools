@@ -228,7 +228,7 @@ class Timeseries:
         self.data = self.data[:new_length] + [self.MISSING_VALUE] * append_to_end
         return self
 
-    def bias(self, other, epsilon=0.0):
+    def bias(self, other):
         """
         Returns the bias on overlapping data.
         """
@@ -245,6 +245,10 @@ class Timeseries:
         if count == 0:
             return math.nan
         return stot / otot
+
+    def nse(self, other):
+        answer = 1 - ((other - self)**2).mean / ((other - other.mean)**2).mean
+        return answer
 
     def compare_start(self, other):
         return (self.start == other.start)

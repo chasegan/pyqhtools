@@ -367,6 +367,16 @@ class TestTimeseries(TestCase):
         bias = clone.bias(original)
         self.assertTrue(abs(bias - 1.4) < 0.000000001)
 
+    def test_nse(self):
+        '''
+        Code tested:
+            Timeseries.nse(other)
+        '''
+        obs = pqh.load_csv(r".\pyqhtools\tests\test_data\416020_100141.CSV")
+        mod = pqh.load_csv(r".\pyqhtools\tests\test_data\416020_rfadj3test_fors.csv")
+        nse = mod.nse(obs)
+        self.assertTrue(abs(nse - 0.725302706062934) < 0.000000001)
+
     def test_date_of_first_last_data(self):
         '''
         Code tested:
