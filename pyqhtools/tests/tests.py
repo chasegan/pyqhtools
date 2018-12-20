@@ -198,6 +198,17 @@ class TestTimeseries(TestCase):
         self.assertTrue(ts4.compare(ts3)[0]) #ts3 and ts4 should be identical
         pqh.save_csv(ts3, r".\pyqhtools\tests\test_data\output\r040134_plus_r040168.csv")
 
+    def test_div_number(self):
+        '''
+        Code tested:
+            Timeseries.__div__(number)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = ts1 / ts1.mean
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__add__ and __radd__ do not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 1.0) < 0.000001) #normalized series should have mean=1
+        self.assertTrue(ts2.length == ts1.length)
+
     def test_sub_rsub_number(self):
         '''
         Code tested:

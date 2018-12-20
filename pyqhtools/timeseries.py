@@ -94,6 +94,9 @@ class Timeseries:
     def __div__(self, other):
         return self * other**-1
 
+    def __truediv__(self, other):
+        return self * other**-1
+
     def clone(self):
         answer = Timeseries()
         answer.source = self.source
