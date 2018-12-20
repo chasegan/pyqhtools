@@ -105,14 +105,20 @@ class Timeseries:
         if is_a_number(value):
             for i in range(len(self.data)):
                 self.data[i] = self.data[i] + value
-        elif isinstance(value, timeseries):
-            add_timeseries(value)
+        elif isinstance(value, Timeseries):
+            self.add_timeseries(value)
         else:
             raise Exception("Dont know how to add this object.")
         return self
 
     def add_timeseries(self, other):
-        raise Exception("Not implemented.")
+        new_start = min(self.start, other.start)
+        new_end = max(self.end, other.end)
+        self.set_start_end([new_start, new_end])
+        all_dates = self.get_dates()
+        for i in range(self.length):
+            o = other.get_value(0, 0, 0, date=all_dates[i])
+            self.data[i] += o
         return self
 
     def scale_monthly(self, seasonal_factors=None):
@@ -278,6 +284,22 @@ class Timeseries:
         print("Bias: " + str(bias))
         return [all_same, start_is_same, end_is_same, timestep_is_same,
             length_is_same, missing_is_same, nonmissing_is_same]
+
+    def date_of_first_data(self):
+        for i in range(self.length):
+            if not math.isnan(self.data[i]):
+                date = self.start + i * self.timestep
+                return date
+        return None
+
+    def date_of_last_data(self):
+        l = self.length
+        for i in range(l):
+            j = l - i - 1
+            if not math.isnan(self.data[j]):
+                date = self.start + j * self.timestep
+                return date
+        return None
 
     def infill_merge(self, other):
         if (self.timestep != other.timestep):

@@ -141,60 +141,73 @@ class TestTimeseries(TestCase):
         self.assertTrue(abs(ts1.mean - (-0.519659885)) < 0.01)
         self.assertTrue(abs(ts1.std - 1.68) < 0.1)
 
-    def test_adding_a_value(self):
+    def test_add_radd_number(self):
         '''
         Code tested:
             Timeseries.__add__(value)
-        '''
-        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
-        ts2 = ts1 + 1.1
-        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
-        self.assertTrue(abs(ts2.mean - 6.29659885) < 0.0001)
-        self.assertTrue(ts2.min == 1.1)
-        self.assertTrue(ts2.max == 495.1)
-        self.assertTrue(ts2.length == ts1.length)
-
-    def test_adding_a_value_2(self):
-        '''
-        Code tested:
             Timeseries.__radd__(value)
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
-        ts2 = 1.1 + ts1
-        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
-        self.assertTrue(abs(ts2.mean - 6.29659885) < 0.0001)
+        ts2 = ts1 + 1.1
+        ts3 = 1.1 + ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__add__ and __radd__ do not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 6.29659885) < 0.000001)
         self.assertTrue(ts2.min == 1.1)
         self.assertTrue(ts2.max == 495.1)
         self.assertTrue(ts2.length == ts1.length)
+        self.assertTrue(ts2.compare(ts3)[0]) #TS3 and TS2 should be identical
 
-    def test_subtracting_a_value(self):
+    def test_add_radd_timeseries(self):
         '''
         Code tested:
-            Timeseries.__add__(value)
+            Timeseries.__add__(other)
+            Timeseries.__radd__(other)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040168.csv")
+        ts3 = ts1 + ts2
+        ts4 = ts2 + ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__add__ and __radd__ do not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 4.453350651058) < 0.000001) #__add__ and __radd__ do not modify the original timeseries
+        self.assertTrue(abs(ts3.mean - 9.56699353053) < 0.000001)
+        self.assertTrue(ts3.length == 45691) #length should be the union of ts1 and ts2 (not the intersect)
+        self.assertTrue(ts4.compare(ts3)[0]) #ts3 and ts4 should be identical
+        pqh.save_csv(ts3, r".\pyqhtools\tests\test_data\output\r040134_plus_r040168.csv")
+
+    def test_sub_rsub_number(self):
+        '''
+        Code tested:
+            Timeseries.__sub__(value)
+            Timeseries.__rsub__(value)
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         ts2 = ts1 - 1.1
-        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
-        self.assertTrue(abs(ts2.mean - 4.09659885) < 0.0001)
+        ts3 = 1.1 - ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__sub__ and __rsub__ do not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 4.09659885) < 0.000001)
         self.assertTrue(ts2.min == -1.1)
         self.assertTrue(ts2.max == 492.9)
         self.assertTrue(ts2.length == ts1.length)
+        self.assertTrue(ts3.length == ts1.length)
+        self.assertTrue(abs(ts3.mean + 4.09659885) < 0.000001)
+        pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\output\r040134_minus_1point1.csv")
 
-    def test_multiplying_a_value(self):
+    def test_mul_rmul_number(self):
         '''
         Code tested:
             Timeseries.__mul__(value)
+            Timeseries.__rmul__(value)
         '''
         ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
         ts2 = ts1 * 2.0
-        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.0001)
-        self.assertTrue(abs(ts2.mean - 10.3931977) < 0.0001)
+        ts3 = 2.0 * ts1
+        self.assertTrue(abs(ts1.mean - 5.19659885) < 0.000001) #__mul__ and __rmul__ do not modify the original timeseries
+        self.assertTrue(abs(ts2.mean - 10.3931977) < 0.000001)
         self.assertTrue(ts2.min == 0)
         self.assertTrue(ts2.max == 988)
         self.assertTrue(ts2.length == ts1.length)
-        ts3 = 2.0 * ts1
-        ts3_ts2_are_same = ts2.compare(ts3)[0]
-        self.assertTrue(ts3_ts2_are_same)
+        self.assertTrue(ts2.compare(ts3)[0])
+        pqh.save_csv(ts2, r".\pyqhtools\tests\test_data\output\r040134_mul_2.csv")
 
     def test_get_value(self):
         '''
@@ -318,6 +331,23 @@ class TestTimeseries(TestCase):
         clone.scale(1.4)
         bias = clone.bias(original)
         self.assertTrue(abs(bias - 1.4) < 0.000000001)
+
+    def test_date_of_first_last_data(self):
+        '''
+        Code tested:
+            Timeseries.bias(other)
+        '''
+        ts1 = pqh.load_csv(r".\pyqhtools\tests\test_data\p040850_headder_missing_start_end.csv")
+        first_data_date = ts1.date_of_first_data()
+        self.assertTrue(first_data_date == pqh.parse_date("12/02/1913"))
+        last_data_date = ts1.date_of_last_data()
+        self.assertTrue(last_data_date == pqh.parse_date("15/01/1970"))
+        #Do another one
+        ts2 = pqh.load_csv(r".\pyqhtools\tests\test_data\r040134.csv")
+        first_data_date = ts2.date_of_first_data()
+        self.assertTrue(first_data_date == pqh.parse_date("01/06/1910"))
+        last_data_date = ts2.date_of_last_data()
+        self.assertTrue(last_data_date == pqh.parse_date("06/12/2017"))
 
     def test_infill_merge(self):
         '''
